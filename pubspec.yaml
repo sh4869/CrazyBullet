@@ -1,0 +1,12 @@
+author: "sh4869 <nobuk4869@gmail.com>"
+description: "MiniGame 2017"
+homepage: "https://github.com/sh4869/test"
+name: "minigame2017"
+version: "0.1.0"
+dependencies: 
+  firebase: ^3.0.0
+  browser: any
+  uix:
+    git:
+      url: git://github.com/sh4869/uix.git
+      ref: fix-errors-in-ddc
