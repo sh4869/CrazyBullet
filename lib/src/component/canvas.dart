@@ -1,8 +1,8 @@
 import 'dart:html' as html;
 import 'dart:math' as math;
+import 'dart:web_audio';
 import 'package:uix/uix.dart';
 import '../env.dart';
-import '../util.dart';
 import '../data/player.dart';
 import '../data/enemy.dart';
 import '../store.dart';
@@ -12,9 +12,7 @@ Component<dynamic> $Canvas() => new Canvas();
 class Canvas extends Component {
   final tag = 'canvas';
   html.CanvasRenderingContext2D ctx;
-  int width = -1;
-  int height = -1;
-  int radius = 15;
+  int width = -1, height = -1;
   int oldclock, per = 10;
   bool moveMouse = false;
   int count = 0;
@@ -24,9 +22,8 @@ class Canvas extends Component {
   List<Player> players = new List<Player>();
   List<Enemy> enemies = new List<Enemy>();
 
-  Canvas();
-
-  init() {
+  init() async {
+    addSubscription(scheduler.onNextFrame.listen(invalidate));
     ctx = (element as html.CanvasElement).context2D;
     element.onClick.listen((e) {
       if (!store.finish && !store.start) {
@@ -39,7 +36,6 @@ class Canvas extends Component {
       }
     });
     element.onMouseMove.listen(_handleMove);
-
     addSubscription(html.window.onResize.listen(_handleResize));
   }
 
@@ -67,10 +63,10 @@ class Canvas extends Component {
     var dead_list = [];
     players.forEach((player) {
       // 外に言ってしまったPlayerは消す
-      if (player.point.x + radius < 0 ||
-          player.point.x - radius > element.clientWidth ||
-          player.point.y + radius < 0 ||
-          player.point.y - radius > element.clientHeight) {
+      if (player.point.x + player.size < 0 ||
+          player.point.x - player.size > element.clientWidth ||
+          player.point.y + player.size < 0 ||
+          player.point.y - player.size > element.clientHeight) {
         delete_list.add(player);
       } else {
         enemies.forEach((e) {
@@ -171,21 +167,25 @@ class Canvas extends Component {
     } else {
       if (!moveMouse) {
         count++;
-        if (count % 200 == 0) {
+        if (count % 50 == 0) {
           store.damage(5);
         }
       } else {
         count = 0;
       }
-      _updatePlayer(oldPoint - newPoint, moveMouse);
+      _updatePlayer(newPoint - oldPoint, moveMouse);
       _updateEnemies();
 
       // 一定時間ごとの生成
-      if (scheduler.clock % 100 == 0 && oldclock != scheduler.clock && moveMouse) {
+      if (scheduler.clock % 100 == 0 &&
+          oldclock != scheduler.clock &&
+          moveMouse) {
         _generatePlayer();
       }
-      interval = 200 - (store.score ~/ 100) * 10 < 100 ? 100 : 200 - (store.score ~/ 100) * 10;
-      if (scheduler.clock % interval  == 0 && oldclock != scheduler.clock) {
+      interval = 200 - (store.score ~/ 100) * 10 < 100
+          ? 100
+          : 200 - (store.score ~/ 100) * 10;
+      if (scheduler.clock % interval == 0 && oldclock != scheduler.clock) {
         _generateEnemy();
       }
       // Write Players

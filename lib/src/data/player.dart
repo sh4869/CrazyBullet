@@ -6,8 +6,8 @@ class Player {
   html.Point point;
   double angle;
   final size = 15;
-  Player(this.point)
-      : this.angle = new math.Random().nextDouble() * math.PI * 2;
+  Player(this.point) 
+    : this.angle = (new math.Random().nextInt(3) * 90 as double);
   void move(html.Point diff) {
     double tmp, tmp_angle;
     double radian = math.acos((diff.x * 0 + diff.y * 1) /
@@ -21,7 +21,7 @@ class Player {
     if (tmp_angle > 360) {
       tmp_angle -= 360;
     }
-    point = new html.Point(point.x + math.cos(tmp_angle) * (diff.x),
-        point.y + math.sin(tmp_angle) * (diff.y));
+    this.point = new html.Point(this.point.x + math.cos(tmp_angle) * (diff.x),
+        this.point.y + math.sin(tmp_angle) * (diff.y));
   }
 }
